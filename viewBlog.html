@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog | Sama Altoun</title>
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <h1>Sama Altoun</h1>
+    <p class="header-subtitle">Computer Science with AI Student</p>
+  </header>
+
+  <nav class="main-nav">
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="aboutMe.html">About Me</a></li>
+      <li><a href="viewBlog.html" class="active">Blog</a></li>
+      <li><a href="projects.html">Projects</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h2>Blog</h2>
+    <div id="blog-posts">
+      <p>Loading posts...</p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 2025 Sama Altoun &middot; <a href="https://github.com/samaaltoun" target="_blank">GitHub</a> &middot; <a href="https://linkedin.com/in/sama-altoun" target="_blank">LinkedIn</a></p>
+  </footer>
+
+  <script>
+    fetch('posts.json')
+      .then(res => res.json())
+      .then(posts => {
+        const container = document.getElementById('blog-posts');
+        if (posts.length === 0) {
+          container.innerHTML = '<p>No posts yet. Check back soon!</p>';
+          return;
+        }
+        container.innerHTML = posts.map(post => {
+          const date = new Date(post.created_at);
+          const formatted = date.toLocaleDateString('en-GB', {
+            year: 'numeric', month: 'long', day: 'numeric'
+          });
+          return `
+            <article>
+              <h3>${post.title}</h3>
+              <p>${post.content}</p>
+              <p><small>Posted on ${formatted}</small></p>
+            </article>
+          `;
+        }).join('');
+      })
+      .catch(() => {
+        document.getElementById('blog-posts').innerHTML = '<p>Could not load posts.</p>';
+      });
+  </script>
+</body>
+</html>

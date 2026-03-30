@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <header>
+    <h1>Sama's Portfolio</h1>
+  </header>
+
+  <nav class="main-nav">
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="aboutMe.html">About Me</a></li>
+      <li><a href="viewBlog.php">Blog</a></li>
+      <li><a href="login.html" class="active">Login</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h2>Login</h2>
+    <div id="errorMsg" class="error-message" style="display: none;"></div>
+
+    <form action="login.php" method="POST" class="login-form">
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required>
+  
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required>
+  
+      <button type="submit">Login</button>
+    </form>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2025 Sama's Portfolio | All rights reserved</p>
+  </footer>
+
+  <script src="js/script.js" defer></script>
+</body>
+</html>

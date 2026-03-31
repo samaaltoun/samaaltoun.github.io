@@ -20,6 +20,13 @@
       <li><a href="aboutMe.html">About Me</a></li>
       <li><a href="viewBlog.html" class="active">Blog</a></li>
       <li><a href="projects.html">Projects</a></li>
+      <li id="nav-login"><a href="login.html">Login</a></li>
+    </ul>
+  </nav>
+
+  <nav class="blog-subnav" id="adminNav" style="display: none;">
+    <ul>
+      <li><a href="addEntry.html">+ Add Post</a></li>
     </ul>
   </nav>
 
@@ -34,32 +41,106 @@
     <p>&copy; 2025 Sama Altoun &middot; <a href="https://github.com/samaaltoun" target="_blank">GitHub</a> &middot; <a href="https://www.linkedin.com/in/sama-a-5a39862a1" target="_blank">LinkedIn</a></p>
   </footer>
 
-  <script>
-    fetch('posts.json')
-      .then(res => res.json())
-      .then(posts => {
-        const container = document.getElementById('blog-posts');
-        if (posts.length === 0) {
-          container.innerHTML = '<p>No posts yet. Check back soon!</p>';
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAvHqS9owNQjjc5pEddT9M3KmHBDDtS3c4",
+      authDomain: "sama-portfolio-f743e.firebaseapp.com",
+      projectId: "sama-portfolio-f743e",
+      storageBucket: "sama-portfolio-f743e.firebasestorage.app",
+      messagingSenderId: "60624131331",
+      appId: "1:60624131331:web:00e0d555006495d9a0c536"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Show admin nav if logged in
+    onAuthStateChanged(auth, (user) => {
+      const adminNav = document.getElementById('adminNav');
+      const navLogin = document.getElementById('nav-login');
+      if (user) {
+        adminNav.style.display = 'block';
+        navLogin.innerHTML = '<a href="login.html">Logout</a>';
+      }
+    });
+
+    // Load posts from Firestore
+    async function loadPosts() {
+      const container = document.getElementById('blog-posts');
+
+      try {
+        const q = query(collection(db, 'posts'), orderBy('created_at', 'desc'));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          // Fall back to posts.json if Firestore is empty
+          try {
+            const res = await fetch('posts.json');
+            const posts = await res.json();
+            renderPosts(container, posts.map(p => ({
+              title: p.title,
+              content: p.content,
+              created_at: { toDate: () => new Date(p.created_at) }
+            })));
+          } catch {
+            container.innerHTML = '<p>No posts yet. Check back soon!</p>';
+          }
           return;
         }
-        container.innerHTML = posts.map(post => {
-          const date = new Date(post.created_at);
-          const formatted = date.toLocaleDateString('en-GB', {
+
+        const posts = snapshot.docs.map(doc => doc.data());
+        renderPosts(container, posts);
+      } catch (error) {
+        // Fall back to posts.json if Firestore fails
+        try {
+          const res = await fetch('posts.json');
+          const posts = await res.json();
+          renderPosts(container, posts.map(p => ({
+            title: p.title,
+            content: p.content,
+            created_at: { toDate: () => new Date(p.created_at) }
+          })));
+        } catch {
+          container.innerHTML = '<p>Could not load posts.</p>';
+        }
+      }
+    }
+
+    function renderPosts(container, posts) {
+      if (posts.length === 0) {
+        container.innerHTML = '<p>No posts yet. Check back soon!</p>';
+        return;
+      }
+      container.innerHTML = posts.map(post => {
+        let date = 'Recently';
+        try {
+          const d = post.created_at.toDate();
+          date = d.toLocaleDateString('en-GB', {
             year: 'numeric', month: 'long', day: 'numeric'
           });
-          return `
-            <article>
-              <h3>${post.title}</h3>
-              <p>${post.content}</p>
-              <p><small>Posted on ${formatted}</small></p>
-            </article>
-          `;
-        }).join('');
-      })
-      .catch(() => {
-        document.getElementById('blog-posts').innerHTML = '<p>Could not load posts.</p>';
-      });
+        } catch {}
+        return `
+          <article>
+            <h3>${escapeHtml(post.title)}</h3>
+            <p>${escapeHtml(post.content)}</p>
+            <p><small>Posted on ${date}</small></p>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    loadPosts();
   </script>
 </body>
 </html>

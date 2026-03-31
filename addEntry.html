@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Post | Sama Altoun</title>
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <h1>Sama Altoun</h1>
+    <p class="header-subtitle">Computer Science with AI Student</p>
+  </header>
+
+  <nav class="main-nav">
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="aboutMe.html">About Me</a></li>
+      <li><a href="viewBlog.html">Blog</a></li>
+      <li><a href="projects.html">Projects</a></li>
+      <li><a href="login.html">Logout</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <div id="notLoggedIn" style="text-align: center;">
+      <h2>Access Denied</h2>
+      <p>You need to <a href="login.html">log in</a> to create posts.</p>
+    </div>
+
+    <div id="postFormSection" style="display: none;">
+      <h2>Create New Post</h2>
+      <form id="postForm">
+        <label for="title"><strong>Title:</strong></label>
+        <input type="text" id="title" name="title" required>
+
+        <label for="content"><strong>Content:</strong></label>
+        <textarea id="content" name="content" required></textarea>
+
+        <div id="statusMsg" style="display: none; padding: 0.5rem; border-radius: 6px; margin-top: 0.5rem;"></div>
+
+        <div class="form-buttons">
+          <button type="submit">Publish Post</button>
+          <button type="reset" id="clearBtn">Clear</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 2025 Sama Altoun &middot; <a href="https://github.com/samaaltoun" target="_blank">GitHub</a> &middot; <a href="https://www.linkedin.com/in/sama-a-5a39862a1" target="_blank">LinkedIn</a></p>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAvHqS9owNQjjc5pEddT9M3KmHBDDtS3c4",
+      authDomain: "sama-portfolio-f743e.firebaseapp.com",
+      projectId: "sama-portfolio-f743e",
+      storageBucket: "sama-portfolio-f743e.firebasestorage.app",
+      messagingSenderId: "60624131331",
+      appId: "1:60624131331:web:00e0d555006495d9a0c536"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const notLoggedIn = document.getElementById('notLoggedIn');
+    const postFormSection = document.getElementById('postFormSection');
+    const statusMsg = document.getElementById('statusMsg');
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        notLoggedIn.style.display = 'none';
+        postFormSection.style.display = 'block';
+      } else {
+        notLoggedIn.style.display = 'block';
+        postFormSection.style.display = 'none';
+      }
+    });
+
+    document.getElementById('postForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('title').value.trim();
+      const content = document.getElementById('content').value.trim();
+
+      if (!title || !content) {
+        statusMsg.textContent = 'Please fill out both fields.';
+        statusMsg.style.display = 'block';
+        statusMsg.style.backgroundColor = '#fef2f2';
+        statusMsg.style.color = '#e74c3c';
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, 'posts'), {
+          title: title,
+          content: content,
+          created_at: serverTimestamp()
+        });
+
+        statusMsg.textContent = 'Post published successfully!';
+        statusMsg.style.display = 'block';
+        statusMsg.style.backgroundColor = '#f0fdf4';
+        statusMsg.style.color = '#16a34a';
+        document.getElementById('postForm').reset();
+
+        setTimeout(() => {
+          window.location.href = 'viewBlog.html';
+        }, 1500);
+      } catch (error) {
+        statusMsg.textContent = 'Error publishing post. Please try again.';
+        statusMsg.style.display = 'block';
+        statusMsg.style.backgroundColor = '#fef2f2';
+        statusMsg.style.color = '#e74c3c';
+      }
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', (e) => {
+      if (!confirm('Are you sure you want to clear the form?')) {
+        e.preventDefault();
+      }
+    });
+  </script>
+</body>
+</html>

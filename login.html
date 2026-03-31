@@ -2,45 +2,106 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | Sama Altoun</title>
   <link rel="stylesheet" href="css/reset.css">
   <link rel="stylesheet" href="css/styles.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
-
 <body>
   <header>
-    <h1>Sama's Portfolio</h1>
+    <h1>Sama Altoun</h1>
+    <p class="header-subtitle">Computer Science with AI Student</p>
   </header>
 
   <nav class="main-nav">
     <ul>
       <li><a href="index.html">Home</a></li>
       <li><a href="aboutMe.html">About Me</a></li>
-      <li><a href="viewBlog.php">Blog</a></li>
+      <li><a href="viewBlog.html">Blog</a></li>
+      <li><a href="projects.html">Projects</a></li>
       <li><a href="login.html" class="active">Login</a></li>
     </ul>
   </nav>
 
   <main>
-    <h2>Login</h2>
-    <div id="errorMsg" class="error-message" style="display: none;"></div>
+    <h2>Admin Login</h2>
+    <div id="loginSection">
+      <form id="loginForm" class="login-form">
+        <label for="email"><strong>Email:</strong></label>
+        <input type="email" id="email" name="email" required>
 
-    <form action="login.php" method="POST" class="login-form">
-      <label for="email">Email:</label>
-      <input type="email" id="email" name="email" required>
-  
-      <label for="password">Password:</label>
-      <input type="password" id="password" name="password" required>
-  
-      <button type="submit">Login</button>
-    </form>
+        <label for="password"><strong>Password:</strong></label>
+        <input type="password" id="password" name="password" required>
+
+        <div id="errorMsg" style="color: #e74c3c; display: none; margin-top: 0.5rem;"></div>
+
+        <button type="submit">Login</button>
+      </form>
+    </div>
+
+    <div id="loggedInSection" style="display: none; text-align: center;">
+      <p>You're logged in as <strong id="userEmail"></strong></p>
+      <div class="cta-links" style="margin-top: 1.5rem;">
+        <a href="addEntry.html" class="btn">Write a Post</a>
+        <button id="logoutBtn" class="btn btn-outline" style="cursor: pointer; font-family: inherit;">Logout</button>
+      </div>
+    </div>
   </main>
 
   <footer class="site-footer">
-    <p>© 2025 Sama's Portfolio | All rights reserved</p>
+    <p>&copy; 2025 Sama Altoun &middot; <a href="https://github.com/samaaltoun" target="_blank">GitHub</a> &middot; <a href="https://www.linkedin.com/in/sama-a-5a39862a1" target="_blank">LinkedIn</a></p>
   </footer>
 
-  <script src="js/script.js" defer></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAvHqS9owNQjjc5pEddT9M3KmHBDDtS3c4",
+      authDomain: "sama-portfolio-f743e.firebaseapp.com",
+      projectId: "sama-portfolio-f743e",
+      storageBucket: "sama-portfolio-f743e.firebasestorage.app",
+      messagingSenderId: "60624131331",
+      appId: "1:60624131331:web:00e0d555006495d9a0c536"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const loginSection = document.getElementById('loginSection');
+    const loggedInSection = document.getElementById('loggedInSection');
+    const userEmail = document.getElementById('userEmail');
+    const errorMsg = document.getElementById('errorMsg');
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loginSection.style.display = 'none';
+        loggedInSection.style.display = 'block';
+        userEmail.textContent = user.email;
+      } else {
+        loginSection.style.display = 'block';
+        loggedInSection.style.display = 'none';
+      }
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorMsg.style.display = 'none';
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (error) {
+        errorMsg.textContent = 'Invalid email or password. Please try again.';
+        errorMsg.style.display = 'block';
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await signOut(auth);
+    });
+  </script>
 </body>
 </html>
